@@ -4,7 +4,8 @@ Submission for the Koding Hackathon 2016 - An educational game about energy gene
 What's this?
 ---
 This is a puzzle game that puts the player in the shoes of an engineer designing a power plant. Through 
-investigation and experimentation, the player must try to achieve the design goals.
+investigation and experimentation, the player must try to achieve the design goals. In doing so, they will hopefully learn
+something new about power generation and conversion, some of the most important technologies of our society!
 
 Obviously this is a vast simplification of the real deal, partly due to the time constraint of the hackathon, partly
 to keep it simple enough for a layman to understand what is going on.
