@@ -456,6 +456,13 @@ function awardMedals() {
             $('.' + lev + '-btn').attr('title', 'You have earned a ' + medal + ' medal for this level!');
         }
     }
+    
+    if (localStorage.getItem('level1-bronze'))
+        $('#lvl2-btn').removeClass('disabled');
+    if (localStorage.getItem('level2-bronze'))
+        $('#lvl3-btn').removeClass('disabled');
+    if (localStorage.getItem('level3-bronze'))
+        $('#lvl4-btn').removeClass('disabled');
 }
 
 
@@ -498,13 +505,6 @@ $(function() {
         }
         return false;
     });
-    
-    if (localStorage.getItem('level1-bronze'))
-        $('#lvl2-btn').removeClass('disabled');
-    if (localStorage.getItem('level2-bronze'))
-        $('#lvl3-btn').removeClass('disabled');
-    if (localStorage.getItem('level3-bronze'))
-        $('#lvl4-btn').removeClass('disabled');
         
     game(level_1);
 });

@@ -743,7 +743,7 @@ let steamturbine = {
 
 let watertank = {
     id: 9,
-    name: 'Pressurized Water Tank (Buggy)',
+    name: 'Pressurized Water Tank (Out-of-order)',
     icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/30192-200.png',
     description: 'A water supply for closed loop processes. <br><br>Make sure the input flow rate equals the output flow rate or the tank will fill up/empty out.' +
                  '<br><br>Make sure the input pressure equals tank pressure or bad things will happen.',
@@ -796,9 +796,9 @@ let watertank = {
 
 let heatexchanger = {
     id: 10,
-    name: 'Heat Exchanger (Buggy)',
+    name: 'Heat Exchanger (Out-of-order)',
     icon: '/img/heatexchange.png',
-    description: 'A water supply for closed loop processes. <br><br>Make sure the input flow rate equals the output flow rate or the tank will fill up/empty out.',
+    description: 'A heat exchanger that doesn\'t work.',
     
     inputs: {
         0: {
