@@ -371,7 +371,7 @@ let UI = {
             
             if (param.type == 'percentage') {
                 let slider = $('<div class="slider"></div>');
-                parEl.append($('<span class="val pull-right">' +param.displayValue(instance.params[param_i]) + param.unit + '</span>'));
+                parEl.append($('<span class="val pull-right">' + param.displayValue(instance.params[param_i]) + param.unit + '</span>'));
                 if (param.editable) {
                     parEl.append(slider);
                     slider.slider({
@@ -379,8 +379,24 @@ let UI = {
                         max: param.max * 100,
                         value: Math.round(instance.params[param_i] * 100),
                         slide: function(e, ui) {
-                            parEl.find('.val').text(ui.value + '%')
                             instance.params[param_i] = ui.value / 100.0;
+                            parEl.find('.val').text(param.displayValue(instance.params[param_i]) + param.unit)
+                        }
+                    });
+                }
+            }
+            if (param.type == 'integer') {
+                let slider = $('<div class="slider"></div>');
+                parEl.append($('<span class="val pull-right">' + param.displayValue(instance.params[param_i]) + param.unit + '</span>'));
+                if (param.editable) {
+                    parEl.append(slider);
+                    slider.slider({
+                        min: param.min,
+                        max: param.max,
+                        value: instance.params[param_i],
+                        slide: function(e, ui) {
+                            instance.params[param_i] = ui.value;
+                            parEl.find('.val').text(param.displayValue(instance.params[param_i]) + param.unit)
                         }
                     });
                 }

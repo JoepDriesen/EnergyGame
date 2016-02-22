@@ -4,9 +4,14 @@ let SOLID = 'Solid',
     GAS = 'Gaseous';
     
 let steamTable = {
-    table: [],
+    sat_table: [],
+    sheat_table: {},
     
-    getState: function(p, T) {
+    
+    c_p: 4181, // J/kg - specific heat of water
+    rho_liquid: 1000, // Assume constant in liquid form
+    
+    getStateT: function(p, T) {
         if (T < 273.01)
             return SOLID;
         
@@ -20,11 +25,25 @@ let steamTable = {
             return LIQUID;
         return GAS;
     },
+    
+    getStateS: function(p, s) {
+        if (p < 1000)
+            return SOLID;
+        if (p > 22064000)
+            return GAS;
+            
+        let props = steamTable.getPropsP(p);
+        if (s > props.sg)
+            return GAS;
+        if (s < props.sf)
+            return LIQUID;
+        return STEAM;
+    },
     getPropsT: function(T) {
         let last_e = null;
         
-        for (var entry_i in steamTable.table) {
-            let e = steamTable.table[entry_i];
+        for (var entry_i in steamTable.sat_table) {
+            let e = steamTable.sat_table[entry_i];
             
             if (e.t == T)
                 return e;
@@ -54,11 +73,11 @@ let steamTable = {
     getPropsP: function(p) {
         let last_e = null;
         
-        for (var entry_i in steamTable.table) {
-            let e = steamTable.table[entry_i];
+        for (var entry_i in steamTable.sat_table) {
+            let e = steamTable.sat_table[entry_i];
             
             if (e.p == p)
-                return e.slice();
+                return e;
             
             if (e.p > p) {
                 if (last_e === null)
@@ -82,9 +101,198 @@ let steamTable = {
         
         return null;
     },
+    getPropsSf: function(sf) {
+        let last_e = null;
+        
+        for (var entry_i in steamTable.sat_table) {
+            let e = steamTable.sat_table[entry_i];
+            
+            if (e.sf == sf)
+                return e;
+            
+            if (e.sf > sf) {
+                if (last_e === null)
+                    return null;
+                    
+                let r = (sf - last_e.sf) / (e.sf - last_e.sf);
+                return {
+                    t: last_e.t + r * (e.t - last_e.t),
+                    p: last_e.p + r * (e.p - last_e.p),
+                    vf: last_e.vf + r * (e.vf - last_e.vf),
+                    vg: last_e.vg + r * (e.vg - last_e.vg),
+                    hf: last_e.hf + r * (e.hf - last_e.hf),
+                    hg: last_e.hg + r * (e.hg - last_e.hg),
+                    sf: sf,
+                    sg: last_e.sg + r * (e.sg - last_e.sg),
+                };
+            }
+            
+            last_e = e;
+        }
+        
+        return null;
+    },
+    getPropsSg: function(sg) {
+        let last_e = null;
+        
+        for (var entry_i in steamTable.sat_table) {
+            let e = steamTable.sat_table[entry_i];
+            
+            if (e.sg == sg)
+                return e;
+            
+            if (e.sg > sg) {
+                if (last_e === null)
+                    return null;
+                    
+                let r = (sg - last_e.sg) / (e.sg - last_e.sg);
+                return {
+                    t: last_e.t + r * (e.t - last_e.t),
+                    p: last_e.p + r * (e.p - last_e.p),
+                    vf: last_e.vf + r * (e.vf - last_e.vf),
+                    vg: last_e.vg + r * (e.vg - last_e.vg),
+                    hf: last_e.hf + r * (e.hf - last_e.hf),
+                    hg: last_e.hg + r * (e.hg - last_e.hg),
+                    sf: last_e.sf + r * (e.sf - last_e.sf),
+                    sg: sg,
+                };
+            }
+            
+            last_e = e;
+        }
+        
+        return null;
+    },
+    
+    getLiquidProps: function(t) {
+        return {
+            t: t,
+            rho: steamTable.rho,
+            h: steamTable.c_p * t,
+            s: steamTable.c_p,
+        };
+    },
+    
+    getLiquidS: function(t) {
+        
+    },
+    
+    getVaporPropsT: function(p, t) {
+        let pLow, pLowE, pHigh, pHighE;
+        
+        for (var pressure in steamTable.sheat_table) {
+            if (p <= pressure) {
+                if (p == pressure || pLow === null) {
+                    pLow = pressure;
+                    pLowE = steamTable.sheat_table[pressure];
+                }
+                
+                pHigh = pressure;
+                pHighE = steamTable.sheat_table[pressure];
+                break;
+            }
+            pLow = pressure;
+            pLowE = steamTable.sheat_table[pressure];
+        }
+        
+        let tLow;
+        for (var e_i in pLowE) {
+            let e = pLowE[e_i];
+            if (t <= e.t) {
+                if (t == e.t || tLow == null) {
+                    tLow = e;
+                }
+                if (Math.abs(e.t - t) < Math.abs(tLow.t - t))
+                    pLowE = e;
+                else
+                    pLowE = tLow;
+                break;
+            }
+            tLow = e;
+        }
+        for (var e_i in pHighE) {
+            let e = pHighE[e_i];
+            if (t <= e.t) {
+                if (t == e.t || tLow == null) {
+                    tLow = e;
+                }
+                if (Math.abs(e.t - t) < Math.abs(tLow.t - t))
+                    pHighE = e;
+                else
+                    pHighE = tLow;
+                break;
+            }
+            tLow = e;
+        }
+        r = (p - pLow) / (pHigh - pLow);
+        return {
+            t: t,
+            p: p,
+            rho: 1 / (pLowE.v + r * (pHighE.v - pLowE.v)),
+            h: pLowE.h + r * (pHighE.h - pLowE.h),
+            s: pLowE.s + r * (pHighE.s - pLowE.s),
+        };
+    },
+    
+    getVaporPropsS: function(p, s) {
+        let pLow, pLowE, pHigh, pHighE;
+        
+        for (var pressure in steamTable.sheat_table) {
+            if (p <= pressure) {
+                if (p == pressure || pLow === null) {
+                    pLow = pressure;
+                    pLowE = steamTable.sheat_table[pressure];
+                }
+                
+                pHigh = pressure;
+                pHighE = steamTable.sheat_table[pressure];
+                break;
+            }
+            pLow = pressure;
+            pLowE = steamTable.sheat_table[pressure];
+        }
+        
+        let sLow;
+        for (var e_i in pLowE) {
+            let e = pLowE[e_i];
+            if (s <= e.s) {
+                if (s == e.s || sLow == null) {
+                    sLow = e;
+                }
+                if (Math.abs(e.s - s) < Math.abs(sLow.s - s))
+                    pLowE = e;
+                else
+                    pLowE = sLow;
+                break;
+            }
+            sLow = e;
+        }
+        for (var e_i in pHighE) {
+            let e = pHighE[e_i];
+            if (s <= e.s) {
+                if (s == e.s || tLow == null) {
+                    sLow = e;
+                }
+                if (Math.abs(e.s - s) < Math.abs(sLow.s - s))
+                    pHighE = e;
+                else
+                    pHighE = sLow;
+                break;
+            }
+            sLow = e;
+        }
+        r = (p - pLow) / (pHigh - pLow);
+        return {
+            t: pLowE.t + r * (pHighE.t - pLowE.t),
+            p: p,
+            rho: 1 / (pLowE.v + r * (pHighE.v - pLowE.v)),
+            h: pLowE.h + r * (pHighE.h - pLowE.h),
+            s: s,
+        };
+    },
 };
 
-function FixSaturatedSteamTables() {
+function FixSteamTables() {
     let _steam_sat = [
         [0.01,0.00061,0.00100,205.99,0,2374.9,0.001,2500.9,2500.9,0,9.1555,9.1555],
 [5,0.00087,0.00100,147.01,21.02,2381.8,21.0,2489.1,2510.1,0.0763,8.9485,9.0248],
@@ -139,7 +347,7 @@ function FixSaturatedSteamTables() {
 
     for (var entry_i in _steam_sat) {
         let e = _steam_sat[entry_i];
-        steamTable.table.push({
+        steamTable.sat_table.push({
             t: e[0] + 273, //K
             p: e[1] * 1000000, // Pa
             vf: e[2],
@@ -150,6 +358,156 @@ function FixSaturatedSteamTables() {
             sg: 1000 * e[11], // J/kg
         });
     }
+    
+    let _superheat = {
+        10000: [
+            [50,14.87,2443.3,2592.0,8.174],
+[100,17.20,2515.5,2687.5,8.449],
+[150,19.51,2587.9,2783.0,8.689],
+[200,21.83,2661.3,2879.6,8.905],
+[250,24.14,2736.1,2977.4,9.102],
+[300,26.45,2812.3,3076.7,9.283],
+[350,28.76,2890.0,3177.5,9.451],
+[400,31.06,2969.3,3279.9,9.609],
+[450,33.37,3050.3,3384.0,9.758],
+[500,35.68,3132.9,3489.7,9.900],
+[600,40.30,3303.3,3706.3,10.163],
+[700,44.91,3480.8,3929.9,10.406],
+[800,49.53,3665.3,4160.6,10.631],
+[900,54.14,3856.9,4398.3,10.843],
+[1000,58.76,4055.2,4642.8,11.043]],
+        200000: [
+            [150,0.9599,2577.1,2769.1,7.281],
+[200,1.0805,2654.6,2870.7,7.508],
+[250,1.1989,2731.4,2971.2,7.710],
+[300,1.3162,2808.8,3072.1,7.894],
+[350,1.4330,2887.3,3173.9,8.064],
+[400,1.5493,2967.1,3277.0,8.224],
+[450,1.6655,3048.5,3381.6,8.373],
+[500,1.7814,3131.4,3487.7,8.515],
+[600,2.0130,3302.2,3704.8,8.779],
+[700,2.2443,3479.9,3928.8,9.022],
+[800,2.4755,3664.7,4159.8,9.248],
+[900,2.7066,3856.3,4397.6,9.460],
+[1000,2.9375,4054.8,4642.3,9.660]],
+        500000: [
+            [200,0.4250,2643.3,2855.8,7.061],
+[250,0.4744,2723.8,2961.0,7.272],
+[300,0.5226,2803.2,3064.6,7.461],
+[350,0.5702,2883.0,3168.1,7.635],
+[400,0.6173,2963.7,3272.3,7.796],
+[450,0.6642,3045.6,3377.7,7.947],
+[500,0.7109,3129.0,3484.5,8.089],
+[600,0.8041,3300.4,3702.5,8.354],
+[700,0.8970,3478.5,3927.0,8.598],
+[800,0.9897,3663.6,4158.4,8.824],
+[900,1.0823,3855.4,4396.6,9.036],
+[1000,1.1748,4054.0,4641.4,9.236]],
+        1000000: [
+            [200,0.2060,2622.2,2828.3,6.696],
+[250,0.2328,2710.4,2943.1,6.927],
+[300,0.2580,2793.6,3051.6,7.125],
+[350,0.2825,2875.7,3158.2,7.303],
+[400,0.3066,2957.9,3264.5,7.467],
+[450,0.3305,3040.9,3371.3,7.620],
+[500,0.3541,3125.0,3479.1,7.764],
+[600,0.4011,3297.5,3698.6,8.031],
+[700,0.4478,3476.2,3924.1,8.276],
+[800,0.4944,3661.7,4156.1,8.502],
+[900,0.5408,3853.9,4394.8,8.715],
+[1000,0.5872,4052.7,4639.9,8.916]],
+        1600000: [
+            [225,0.1329,2645.1,2857.8,6.554],
+[250,0.1419,2692.9,2919.9,6.675],
+[300,0.1587,2781.6,3035.4,6.886],
+[350,0.1746,2866.6,3146.0,7.071],
+[400,0.1901,2950.7,3254.9,7.239],
+[450,0.2053,3035.0,3363.5,7.395],
+[500,0.2203,3120.1,3472.6,7.541],
+[600,0.2500,3293.9,3693.9,7.810],
+[700,0.2794,3473.5,3920.5,8.056],
+[800,0.3087,3659.5,4153.3,8.283],
+[900,0.3378,3852.1,4392.6,8.497],
+[1000,0.3669,4051.2,4638.2,8.697]],
+        2500000: [
+            [250,0.0871,2663.3,2880.9,6.411],
+[300,0.0989,2762.2,3009.6,6.646],
+[350,0.1098,2852.5,3127.0,6.842],
+[400,0.1201,2939.8,3240.1,7.017],
+[450,0.1302,3026.2,3351.6,7.177],
+[500,0.1400,3112.8,3462.7,7.325],
+[600,0.1593,3288.5,3686.8,7.598],
+[700,0.1784,3469.3,3915.2,7.846],
+[800,0.1972,3656.2,4149.2,8.074],
+[900,0.2160,3849.4,4389.3,8.288],
+[1000,0.2347,4048.9,4635.6,8.490]],
+        4000000: [
+            [275,0.0546,2668.9,2887.3,6.231],
+[300,0.0589,2726.2,2961.7,6.364],
+[350,0.0665,2827.4,3093.3,6.584],
+[400,0.0734,2920.7,3214.5,6.771],
+[450,0.0800,3011.0,3331.2,6.939],
+[500,0.0864,3100.3,3446.0,7.092],
+[600,0.0989,3279.4,3674.9,7.371],
+[700,0.1110,3462.4,3906.3,7.621],
+[800,0.1229,3650.6,4142.3,7.852],
+[900,0.1348,3844.8,4383.9,8.067],
+[1000,0.1465,4045.1,4631.2,8.270]],
+        6000000: [
+            [300,0.0362,2668.4,2885.5,6.070],
+[350,0.0423,2790.4,3043.9,6.336],
+[400,0.0474,2893.7,3178.2,6.543],
+[450,0.0522,2989.9,3302.9,6.722],
+[500,0.0567,3083.1,3423.1,6.883],
+[600,0.0653,3267.2,3658.7,7.169],
+[700,0.0736,3453.0,3894.3,7.425],
+[800,0.0817,3643.2,4133.1,7.658],
+[900,0.0896,3838.8,4376.6,7.875],
+[1000,0.0976,4040.1,4625.4,8.079]],
+        9000000: [
+            [350,0.0258,2724.9,2957.3,6.038],
+[400,0.0300,2849.2,3118.8,6.288],
+[450,0.0335,2956.3,3258.0,6.487],
+[500,0.0368,3056.3,3387.4,6.660],
+[600,0.0429,3248.4,3634.1,6.961],
+[700,0.0486,3438.8,3876.1,7.223],
+[800,0.0541,3632.0,4119.1,7.461],
+[900,0.0596,3829.6,4365.7,7.680],
+[1000,0.0649,4032.4,4616.7,7.886]],
+        15000000: [
+            [375,0.0139,2650.4,2858.9,5.705],
+[400,0.0157,2740.6,2975.7,5.882],
+[450,0.0185,2880.7,3157.9,6.143],
+[500,0.0208,2998.4,3310.8,6.348],
+[600,0.0249,3209.3,3583.1,6.680],
+[700,0.0286,3409.8,3839.1,6.957],
+[800,0.0321,3609.2,4091.1,7.204],
+[900,0.0355,3811.2,4343.7,7.429],
+[1000,0.0388,4017.1,4599.2,7.638]],
+        25000000: [
+            [375,0.00196,1799.9,1849.4,4.034],
+[400,0.00601,2428.5,2578.6,5.140],
+[450,0.00918,2721.2,2950.6,5.676],
+[500,0.01114,2887.3,3165.9,5.964],
+[600,0.01414,3140.0,3493.5,6.364],
+[700,0.01664,3359.9,3776.0,6.670],
+[800,0.01892,3570.7,4043.8,6.932],
+[900,0.02108,3780.2,4307.1,7.167],
+[1000,0.02315,3991.5,4570.2,7.382]]
+    };
+    
+    for (var entry_i in _superheat) {
+        let e = _superheat[entry_i];
+        
+        steamTable.sheat_table[entry_i] = $.map(e, function(data) {
+            return {
+                t: 273 + data[0],
+                v: data[1],
+                h: 1000 * data[3],
+                s: 1000 * data[4],
+            };
+        });
+    }
 }
 
-FixSaturatedSteamTables();
+FixSteamTables();

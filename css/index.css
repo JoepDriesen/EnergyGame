@@ -194,6 +194,7 @@
 #info-bar .state td:nth-child(2) {
     text-align: left;
     padding-right: 20px;
+    white-space: nowrap;
 }
 
 #info-bar .state td:nth-child(3) {

@@ -368,6 +368,29 @@ let pump = {
     icon: '/img/pump.png',
     description: 'This component raises the pressure of a fluid.<br>Be carefull not to feed vapor into a pump, as this will destroy it!',
     
+    params: {
+        dm_max: {
+            name: 'm<sub>max</sub>',
+            description: 'The maximum fluid flow rate this turbine can handle. Any excess will be stuck at the input.',
+            type: 'constant',
+            editable: false,
+            default: 5000,
+            unit: ' kg/s',
+            displayValue: function(val) { return val },
+        },
+        p_out: {
+            name: 'Exit Pressure',
+            type: 'integer',
+            editable: true,
+            description: 'The pressure of the fluid at the end of the turbine. This determines the power output of the turbine. Mimimum pressure is atmospheric pressure (44.1kPa).',
+            min: 101325,
+            max: 1000000,
+            default: 101325,
+            unit: 'kPa',
+            displayValue: function(val) { return (val/1000).toFixed(2); },
+        },
+    },
+    
     inputs: {
         0: {
             type: FLUID,
@@ -375,7 +398,7 @@ let pump = {
                 x: 0.3,
                 y: 0
             }
-        }
+        },
     },
     
     outputs: {
@@ -388,8 +411,103 @@ let pump = {
         },
     },
     
-    resolve: function(inputStates) {
-        return null;
+    resolve: function(inputStates, params) {
+        let input = inputStates[0];
+        
+        if (input === null)
+            return null;
+        
+        if (input.p >= params.p_out) {
+            return [{
+                fluid: input.fluid,
+                t: input.t,
+                p: input.p,
+                dm: Math.min(input.dm, params.dm_max),
+                rho: input.rho,
+                s: input.s,
+            }];
+        }
+        
+        if (input.s <= 0) {
+            // will always stays FLUID due to isentropic compression
+            return [{
+                fluid: input.fluid,
+                t: input.t,
+                p: params.p_out,
+                dm: Math.min(input.dm, params.dm_max),
+                rho: input.rho,
+                s: input.s,
+            }];
+        }
+        else if (input.s >= 1) {
+            // will always stay GAS due to isentropic commpression
+            let inVapor = steamTable.getVaporPropsT(input.p, input.t);
+            
+            let outVapor = steamTable.getVaporPropsS(params.p_out, inVapor.s);
+            
+            return [{
+                fluid: input.fluid,
+                t: outVapor.t,
+                p: params.p_out,
+                dm: Math.min(input.dm, params.dm_max),
+                rho: outVapor.rho,
+                s: input.s,
+            }];
+        } else {
+            // Might come out of saturated steam area
+            let inProps = steamTable.getPropsP(input.p);
+            let inEntropy = inProps.sf + input.s * (inProps.sg - inProps.sf);
+            let outProps = steamTable.getPropsP(params.p_out);
+            
+            if (outProps === null) {
+                // Pressure too high for saturated steam, this is GAS
+                let outVapor = steamTable.getVaporPropsS(params.p_out, inEntropy);
+            
+                return [{
+                    fluid: input.fluid,
+                    t: outVapor.t,
+                    p: params.p_out,
+                    dm: Math.min(input.dm, params.dm_max),
+                    rho: outVapor.rho,
+                    s: input.s,
+                }];
+            } else if (inEntropy <= outProps.sf) {
+                // We have come out of saturated steam into liquid
+                let saturationPoint = steamTable.getPropsSf(inEntropy);
+                
+                return [{
+                    fluid: input.fluid,
+                    t: outProps.t + (p_out - saturationPoint.p) / (steamTable.rho_liquid * steamTable.c_p),
+                    p: params.p_out,
+                    dm: Math.min(input.dm, params.dm_max),
+                    rho: steamTable.rho_liquid,
+                    s: 0,
+                }];
+            } else if (inEntropy >= outProps.sf) {
+                // We have come out of saturated steam into gas
+                let outVapor = steamTable.getVaporPropsS(params.p_out, inEntropy);
+            
+                return [{
+                    fluid: input.fluid,
+                    t: outVapor.t,
+                    p: params.p_out,
+                    dm: Math.min(input.dm, params.dm_max),
+                    rho: outVapor.rho,
+                    s: input.s,
+                }];
+            } else {
+                // still in saturated gas area
+                let outRho = 1 / (outProps.vf + outProps.s * (outProps.vg - outProps.vf))
+                return [{
+                    fluid: input.fluid,
+                    t: outProps.t,
+                    p: params.p_out,
+                    dm: Math.min(input.dm, params.dm_max),
+                    rho: outRho,
+                    s: outProps.s,
+                }];
+            }
+        }
     },
 };
 
@@ -400,13 +518,13 @@ let coalboiler = {
     description: 'A combustion chamber that burns coal to heat a fluid stream.',
     
     params: {
-        q_max: {
-            name: 'q<sub>max</sub>',
+        dm_max: {
+            name: 'm<sub>max</sub>',
             description: 'The maximum fluid flow rate this boiler can handle. Any excess will be stuck at the input.',
             type: 'constant',
             editable: false,
-            default: 5,
-            unit: ' m<sup>3</sup>/s',
+            default: 5000,
+            unit: ' kg/s',
             displayValue: function(val) { return val },
         },
     },
@@ -457,36 +575,39 @@ let coalboiler = {
             return null;
         }
         
-        let q = Math.min(params.q_max, inputStates[1].q)
+        let dm = Math.min(params.dm_max, inputStates[1].dm)
         let c_p_water = 4181; // J/kg - specific heat of water
         let h_0 = c_p_water * (inputStates[1].t - 273); // J/kg - enthalpy of water at this temperate, assume constant specific enthalpy below 373K
-        let h_1 = h_0 + (Q_burning / (q * inputStates[1].rho)); // J/kg - enthalpy of water after adding the burning heat
+        let h_1 = h_0 + (Q_burning / dm); // J/kg - enthalpy of water after adding the burning heat
         
         let props = steamTable.getPropsP(inputStates[1].p); // Pressure of water stays constant while passing through the boiler
         
-        let s, t, rho;
+        let s, t, rho, S;
         if (h_1 < props.hf) {
             // Liquid water
             s = 0;
-            t = 273 + h_1 / c_p_water;
+            t = 273 + h_1 / steamTable.c_p;
             rho = inputStates[1].rho;
+            S = steamTable.c_p;
         } else if (h_1 > props.hg) {
             // Steam
             s = 1;
             t = 1000;
             rho = 0.1;
+            S: 0;
         } else {
             // Saturated steam
             s = (h_1 - props.hf) / (props.hg - props.hf);
             t = props.t;
             rho = 1 / (props.vf + s * (props.vg - props.vf));
+            S = props.sf + s * (props.sg - props.sf);
         }
         
         return [{
             fluid: inputStates[1].fluid,
             t: t,
             p: inputStates[1].p,
-            q: q,
+            dm: dm,
             rho: rho,
             s: s,
         }];
@@ -497,7 +618,40 @@ let steamturbine = {
     id: 8,
     name: 'Steam Turbine',
     icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/62804-200.png',
-    description: 'A turbine whose blades are spun under the influence of pressurised vapor (steam). The resulting rotational energy is output as a torque.',
+    description: 'A turbine whose blades are spun under the influence of pressurised vapor (steam). The resulting rotational energy is output as a torque.' +
+                 '<br><br>To produce any torque, the input pressure must be higher than the output pressure.',
+    
+    params: {
+        dm_max: {
+            name: 'm<sub>max</sub>',
+            description: 'The maximum fluid flow rate this turbine can handle. Any excess will be stuck at the input.',
+            type: 'constant',
+            editable: false,
+            default: 5000,
+            unit: ' kg/s',
+            displayValue: function(val) { return val },
+        },
+        p_out: {
+            name: 'Exit Pressure',
+            type: 'integer',
+            editable: true,
+            description: 'The pressure of the fluid at the end of the turbine. This determines the power output of the turbine. Mimimum pressure is atmospheric pressure (101.325kPa).',
+            min: 101325,
+            max: 1000000,
+            default: 101325,
+            unit: 'kPa',
+            displayValue: function(val) { return (val/1000).toFixed(2); },
+        },
+        n: {
+            name: 'Rotations per minute',
+            description: 'The rotational velocity of the output torque in rotations per minute.',
+            type: 'constant',
+            editable: false,
+            default: 3000,
+            unit: ' rpm',
+            displayValue: function(val) { return val; },
+        },
+    },
     
     inputs: {
         0: {
@@ -527,15 +681,61 @@ let steamturbine = {
     },
     
     resolve: function(inputStates, params) {
+        let input = inputStates[0];
+        
+        if (input == null)
+            return null;
+        
+        if (input.p <= params.p_out) {
+            return [{
+                fluid: input.fluid,
+                t: input.t,
+                p: input.p,
+                dm: Math.min(input.dm, params.dm_max),
+                rho: input.rho,
+                s: input.s,
+            },
+            {
+                T: 0,
+                n: 0,
+            }];
+        }
+        
+        if (input.s >= 0 && input.s <= 1) {
+            // will never exit Saturated steam area due to isentropic behaviour
+            let inProps = steamTable.getPropsP(input.p);
+            let inEntropy = inProps.sf + input.s  * (inProps.sg - inProps.sf);
+            let inh = inProps.hf + input.s * (inProps.hg - inProps.hf);
+            let props = steamTable.getPropsP(params.p_out);
+            let outS = (inEntropy - props.sf) / (props.sg - props.sf);
+            let outh = props.hf + outS * (props.hg - props.hf);
+            let dh = inh - outh;
+            let P_turb = dh * input.dm;
+            
+            return [{
+                fluid: input.fluid,
+                t: props.t,
+                p: params.p_out,
+                dm: Math.min(input.dm, params.dm_max),
+                rho: 1 / (props.vf + outS * (props.vg - props.vf)),
+                s: outS,
+            }, {
+                T: P_turb / params.n,
+                n: params.n,
+            }]
+        }
+        
+        
         return null;
     },
 };
 
 let watertank = {
     id: 9,
-    name: 'Water Tank',
+    name: 'Pressurized Water Tank',
     icon: 'https://d30y9cdsu7xlg0.cloudfront.net/png/30192-200.png',
-    description: 'A water supply for closed loop processes. <br><br>Make sure the input flow rate equals the output flow rate or the tank will fill up/empty out.',
+    description: 'A water supply for closed loop processes. <br><br>Make sure the input flow rate equals the output flow rate or the tank will fill up/empty out.' +
+                 '<br><br>Make sure the input pressure equals tank pressure or bad things will happen.',
     
     inputs: {
         0: {
@@ -552,8 +752,8 @@ let watertank = {
             type: FLUID,
             controlling: true,
             state: {
-                T: 300,
-                q: 1,
+                t: 300,
+                dm: 1000,
                 rho: 1000,
             },
             location: {

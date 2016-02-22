@@ -79,7 +79,7 @@ let UNITS = {
         description: 'Mass flow'
     },
     s: {
-        display: 's',
+        display: 'sat',
         unit: '',
         description: 'Steam saturation (1 = water, 0 = vapour, in between = steam)',
     },
@@ -98,4 +98,9 @@ let UNITS = {
         unit: 'K',
         description: 'Temperature'
     },
+    S: {
+        display: 's',
+        unit: 'J/kgK',
+        description: 'Entropy (totally for beginners)'
+    }
 };
