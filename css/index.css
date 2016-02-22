@@ -37,6 +37,13 @@
     bottom:220px;
     right:520px;
 }
+#power {
+    position: fixed;
+    bottom:220px;
+    right:700px;
+    font-weight: bold;
+    color: white;
+}
 #error-box {
     position: fixed;
     top:60px;

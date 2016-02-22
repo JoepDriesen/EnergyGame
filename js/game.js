@@ -317,6 +317,7 @@ function update(dt) {
                 continue;
             
             toResolve.state = toResolve.ref.state;
+            
             if (toResolve.connectedTo.ref.absorb)
                 toResolve.connectedTo.state = toResolve.connectedTo.ref.state;
             else
@@ -404,6 +405,21 @@ function update(dt) {
                 }
                 cascadeNull(comp);
             }
+        }
+    }
+    
+    for (var i in g_CurrentLevel.inputs) {
+        if (g_CurrentLevel.inputs[i].ref.name === 'Grid') {
+            var p = (g_CurrentLevel.inputs[i].state ? g_CurrentLevel.inputs[i].state : g_CurrentLevel.inputs[i].ref.state).P_elec;
+            var prefix = '';
+            if (p > 1000000) {
+                p /= 1000000;
+                prefix = 'M';
+            } else if (p > 1000) {
+                p /= 1000;
+                prefix = 'k';
+            }
+            $('#power #power-val').text(p.toFixed(2) + ' ' + prefix + 'W');
         }
     }
 }
