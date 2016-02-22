@@ -160,7 +160,7 @@ let waterTurbine = {
 let generator = {
     id: 2,
     name: 'Synchronous Generator',
-    icon: 'http://www.generatorinstallers.co.uk/images/uploads/general/generator-auto-switchover-system-v02.png',
+    icon: '/img/generator.png',
     description: 'A synchronous generator can supply electrical power to the grid by spinning its magnetized rotor. The rotor is spun using torque.',
     
     inputs: {
@@ -266,7 +266,7 @@ let flowsplit = {
 let flowcollect = {
     id: 4,
     name: 'Flow Collector',
-    icon: 'http://uxrepo.com/static/icon-sets/google-material/svg/android-call-merge.svg',
+    icon: '/img/collector.png',
     description: 'This component merges 2 fluid flows into one, having a flow rate equal to the sum of the input flow rates.',
     
     inputs: {

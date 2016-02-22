@@ -96,7 +96,7 @@ let level_1 = {
     
     hints: [
        {
-            text: 'These boxes are inputs or outputs.',
+            text: 'These boxes are inputs or outputs. Click for info!',
             width: 210,
             top: '40px',
             left: '20%',
@@ -108,7 +108,7 @@ let level_1 = {
             }
        },
        {
-            text: 'By right-clicking on an input/output, you can connect them to an output/input of the same type.',
+            text: 'By <b>right-clicking</b> on an input/output, you can connect them to an output/input of the same type.',
             width: 210,
             bottom: '45px',
             left: '20%',
@@ -121,7 +121,7 @@ let level_1 = {
             }
        },
        {
-            text: 'This is a list of all the components available to you to accomplish the design goals. Drag them ' +
+            text: 'Drag these components ' +
                   'onto the workspace to start using them.',
             width: 300,
             bottom: '35px',
@@ -180,7 +180,7 @@ let level_1 = {
 
 let level_2 = {
     name: 'level2',
-    components: [coalboiler, pump, steamturbine, watertank, heatexchanger, generator],
+    components: [coalboiler, pump, steamturbine, generator, watertank, heatexchanger],
     inputs: {
         0: {
             ref: {
@@ -272,7 +272,7 @@ let level_2 = {
         gold: 'Unavailable',
     },
     goalHints: {
-        bronze: 'You only need the first 3 components to achieve this goal.',
+        bronze: 'You only need the first 4 components to achieve this goal. Beware the pressure.',
         silver: '?',
         gold: '?',  
     },

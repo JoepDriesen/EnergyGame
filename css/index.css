@@ -271,6 +271,10 @@
     overflow-y: scroll;
 }
 
+#component-bar h4 {
+    margin: 10px 0 0 20px;
+}
+
 #component-bar .component-icon {
     float: left;
 }

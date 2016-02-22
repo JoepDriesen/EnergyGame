@@ -41,7 +41,7 @@ let UNITS = {
     q: {
         display: 'q',
         unit: 'm<sup>3</sup>/s',
-        description: 'Flow',
+        description: 'Flow Rate',
     },
     T: {
         display: '&tau;',

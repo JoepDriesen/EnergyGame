@@ -236,6 +236,7 @@ let UI = {
         ws.append($svgEl('svg'));
         
         $('#component-bar').empty();
+        $('#component-bar').append($('<h4>Available Components:</h4>'))
         $('#info-bar>div').hide();
         
         this.componentClickCallback = componentClickCallback;
