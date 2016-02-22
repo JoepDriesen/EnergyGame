@@ -1,0 +1,329 @@
+.component-icon {
+    width: 60px;
+    margin: 20px 30px 0;
+}
+
+.component-icon .icon-img {
+    height: 60px;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid rgba(0, 0, 0, .1);
+    float: left;
+}
+.component-icon.ui-draggable-dragging {
+    margin: 0;
+}
+.component-icon.ui-draggable-dragging .icon-img {
+    background-color: rgba(255, 255, 255, .4);
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, .5);
+}
+.component-icon.ui-draggable-dragging .icon-text {
+    display: none;
+}
+
+
+
+#reset-btn {
+    position: fixed;
+    bottom:220px;
+    right:520px;
+}
+#error-box {
+    position: fixed;
+    top:60px;
+    left:0;
+    right:500px;
+    height: 55px;
+    margin: 30px 0 0;
+    padding: 0 30px;
+    display: none;
+}
+#error-box .alert {
+    background-color: rgba(231, 76, 60, .7);
+    border-color: rgba(231, 76, 60, .8);
+}
+#goals-panel {
+    position: fixed;
+    top:80px;
+    right:520px;
+    width: 300px;
+    background-color: rgba(255,255,255,0.8);
+}
+#goals-panel th {
+    padding-right: 20px;
+    padding-bottom: 5px;
+    vertical-align: top;
+}
+#goals-panel th.bronze {
+    color: #665D1E;
+}
+#goals-panel th.silver {
+    color: #C9C0BB;
+}
+#goals-panel th.gold {
+    color: #FFD700;
+}
+
+#workspace {
+    position: fixed;
+    top:60px;
+    left:0;
+    right:500px;
+    bottom:200px;
+}
+
+#workspace .bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('http://ideatube.science/wp/yIGQxzu.jpg');
+    background-size: 100%;
+    opacity: .8;
+}
+
+#workspace svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#workspace svg line {
+    stroke-width:4;
+}
+
+#workspace svg line:hover {
+    opacity: 0.5;
+    stroke-width:6;
+}
+
+#workspace .component-icon {
+    position: absolute;
+}
+
+#workspace .component-icon .icon-img {
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, .5);
+    background-color: rgba(255, 255, 255, .4);
+}
+
+#workspace .component-icon .icon-text {
+    display: none;
+}
+
+#workspace .input {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: black;
+}
+
+#workspace .output {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+}
+
+#workspace .input,
+#workspace .output {
+    border: none;
+    border-style:none;
+}
+#workspace .input:hover,
+#workspace .output:hover {
+    cursor: crosshair;
+}
+
+
+
+#info-bar {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    bottom: 200px;
+    width: 500px;
+    border-left: 2px solid rgba(0, 0, 0, .1);
+    background-color:rgba(0, 0, 0, 0.02);
+    overflow-y: scroll;
+}
+
+#info-bar .component-info {
+    display: none;
+}
+
+#info-bar .io-info {
+    display: none;
+}
+
+#info-bar .instance-info {
+    display: none;
+}
+
+#info-bar .name {
+    border-bottom: 1px solid #ddd;
+}
+
+#info-bar .btn-delete {
+    height: 25px;
+    line-height: 23px;
+    padding : 0 10px;
+}
+
+#info-bar .icon {
+    width: 140px;
+    height: 140px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, .4);
+    border: 1px solid rgba(0, 0, 0, .1);
+    float: left;
+    margin-right: 10px;
+}
+
+#info-bar .description {
+    text-align: justify;
+    font-weight: bold;
+}
+#info-bar .state {
+    margin-left: 20px;
+}
+#info-bar .state th {
+    padding-right: 20px;
+}
+
+#info-bar .state td:nth-child(2) {
+    text-align: left;
+    padding-right: 20px;
+}
+
+#info-bar .state td:nth-child(3) {
+    color: #888;
+    font-size: .7em;
+}
+
+#info-bar .val {
+    width: 80px;
+    text-align: right;
+}
+
+#info-bar .slider {
+    width: 150px;
+    float: right;
+    margin: 5px 20px;
+}
+
+#info-bar svg {
+    margin-top: 5px;
+    width: 100%;
+}
+
+#info-bar svg .axis path,
+#info-bar svg .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+  stroke-width: 1;
+}
+
+#info-bar svg .axis text {
+    font-size: 12px;
+}
+
+#info-bar svg .line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+#info-bar svg .tick line {
+  opacity: 0.2;
+}
+
+#info-bar .param-line {
+    margin: 0 0 10px;
+    border-color: #ddd;
+}
+
+#info-bar .param-description {
+    margin: 5px 0 10px 20px;
+}
+
+
+
+#component-bar {
+    height: 200px;
+    border-top: 2px solid rgba(0, 0, 0, .1);
+    background-color:rgba(0, 0, 0, 0.02);
+    overflow-y: scroll;
+}
+
+#component-bar .component-icon {
+    float: left;
+}
+
+#component-bar .component-icon .icon-text {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    float:left;
+    margin-top: 5px;
+}
+
+#winBox img {
+    float: left;
+    margin-right: 20px;
+    width: 50px;
+}
+
+
+
+
+
+
+#workspace .input-fluid {
+    background-color: rgba(0, 76, 184, 0.9);
+}
+#workspace .output-fluid {
+    background-color: rgba(0, 10, 100, 0.9);
+}
+#workspace svg .connector-fluid {
+    stroke: rgba(0, 10, 100, 0.9);
+}
+#workspace .input-torque {
+    background-color: rgba(0, 140, 76, 0.9);
+}
+#workspace .output-torque {
+    background-color: rgba(0, 107, 9, 0.9);
+}
+#workspace svg .connector-torque {
+    stroke: rgba(0, 107, 9, 0.9);
+}
+#workspace .input-electricity {
+    background-color: rgba(250, 250, 250, 0.9);
+}
+#workspace .output-electricity {
+    background-color: rgba(200, 200, 200, 0.9);
+}
+#workspace svg .connector-electricity {
+    stroke: rgba(200, 200, 200, 0.9);
+}
+#workspace .input-coal {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+#workspace .output-coal {
+    background-color: rgba(10, 10, 10, 0.9);
+}
+#workspace svg .connector-coal {
+    stroke: rgba(0, 0, 0, 0.9);
+}
+
+#workspace .hint {
+    position: absolute;
+    color: #eee;
+    font-family: 'Bad Script', cursive;
+}
+#workspace .hint .hint-arrow {
+    position: absolute;
+    
+}

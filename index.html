@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Energy, how does it work?</title>
+        
+        
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+        <script src="//d3js.org/d3.v3.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" 
+                integrity="sha256-KXn5puMvxCw+dAYznun+drMdG1IFl3agK0p/pqT9KAo= sha512-2e8qq0ETcfWRI4HJBzQiA3UoyFk6tbNyG+qSaIBZLyW9Xf3sWZHN/lxe9fTh1U45DpPf07yj94KsUHHWe4Yk1A==" 
+                crossorigin="anonymous"></script>
+        <script src="js/util.js"></script>
+        <script src="js/steam.js"></script>
+        <script src="js/components.js"></script>
+        <script src="js/levels.js"></script>
+        <script src="js/ui.js"></script>
+        <script src="js/game.js"></script>
+         
+        <link href='https://fonts.googleapis.com/css?family=Bad+Script' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/flatly/bootstrap.min.css">
+        <link rel="stylesheet" href="css/index.css">
+        <!--[if IE]>
+          <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+    </head>
+
+    
+    <body class="html">
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Energy, how does it work?</a>
+            </div>
+
+            <ul class="nav navbar-nav">
+                <li id="lvl1-btn" class="active"><a href="#">Level 1: Hydro</a></li>
+                <li id="lvl2-btn" class="disabled" title="Earn a bronze medal in Level 1 first!"><a href="#">Level 2: Gas</a></li>
+                <li id="lvl3-btn" class="disabled" title="Earn a bronze medal in Level 2 first!"><a href="#">Level 3: Coal</a></li>
+                <li id="lvl4-btn" class="disabled" title="Earn a bronze medal in Level 3 first!"><a href="#">Level 4: Cogeneration</a></li>
+            </ul>
+        </nav>
+        
+        <div id="workspace">
+            <div class="bg"></div>
+            <svg></svg>
+            
+            
+        </div>
+        
+        <div id="goals-panel" class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Design Goals</h3>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <tr>
+                        <th class="bronze">Bronze</th>
+                        <td class="bronze"></td>
+                    </tr>
+                    <tr>
+                        <th class="silver">Silver</th>
+                        <td class="silver"></td>
+                    </tr>
+                    <tr>
+                        <th class="gold">Gold</th>
+                        <td class="gold"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <a id="reset-btn" class="btn btn-warning" href="#" onclick="resetLevel()">Clear Schematic</a>
+        
+        <div id="error-box">
+            <div class="alert alert-dismissible alert-danger">
+                <button class="close" type="button">×</button>
+                <span class="text">test</span>
+            </div>
+        </div>
+        
+        <div id="winBox" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Congratulations!</h4>
+                    </div>
+                    <div class="modal-body">
+                        <img src="/img/bronze.png">
+                        <p>
+                            <b>You have won a <span class="medal">bronze</span> medal!</b>
+                        </p>
+                        <p>
+                            You can continue playing if you would like to attain a 
+                            higher score, or use the navigation above to advance to the next level.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Nice</button>
+                    </div>
+                </div>
+            </div>
+         </div>
+        
+        <div id="info-bar" class="container">
+            <div class="component-info">
+                <h3 class="name"></h3>
+                
+                <div class="clearfix">
+                    <img class="icon">
+                
+                    <p class="description">
+                    </p>
+                </div>
+                
+                <br>
+                
+                <p><b>Inputs:</b></p>
+                <ol class="io inputs">
+                </ol>
+                
+                <br>
+                
+                <p><b>Outputs:</b></p>
+                <ol class="io outputs">
+                </ol>
+            </div>
+            
+            <div class="instance-info">
+                <a class="btn btn-danger btn-delete pull-right" href="#">Delete</a>
+                <h3 class="name">Test</h3>
+                
+                <div class="clearfix">
+                    <img class="icon">
+                
+                    <p class="description">
+                    </p>
+                </div>
+                
+                <br>
+                <h4><b>Parameters</b></h4>
+                
+                <div class="params">
+                </div>
+                
+            </div>
+            
+            <div class="io-info">
+                <h3 class="name">Reservoir</h3>
+                
+                <div class="clearfix">
+                    <img class="icon" src="http://games-helper.com/data/think/images/icon_265.png">
+                
+                    <p class="description">
+                        A nearly infinite supply of water that has great potential energy because it is situated at a higher altitude than the power converting station.
+                    </p>
+                </div>
+                
+                <br>
+                
+                <p><b>Type:</b> <span class="type"></span></p>
+                
+                <p><b>State:</b></p>
+                
+                <table class="state">
+                    <tr>
+                        <th>E<sub>potential</sub></th>
+                        <td>100<b>J</b></td>
+                        <td>Potential energy</td>
+                    </tr>
+                    
+                </table>
+            </div>
+        </div>
+        
+        <div id="component-bar" class="navbar-fixed-bottom">
+        </div>
+    </body>
+</html>
