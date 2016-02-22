@@ -21,6 +21,8 @@ function game(level) {
         }
     }
     
+    awardMedals();
+    
     UI.initialize(componentClick, connectorClick, instanceClick, inputLClick, inputRClick, outputLClick, outputRClick, workspaceClick, deleteInstance);
     UI.createComponents(level.components, instantiateComponent);
     UI.createInputs(level.inputs);
@@ -65,6 +67,8 @@ function game(level) {
                 localStorage.setItem(level.name + '-' + medal, true);
                 
                 UI.showWinBox(medal);
+    
+                awardMedals();
             }
         }
       }
@@ -419,10 +423,31 @@ function workspaceClick() {
     }
 }
 
+function awardMedals() {
+    let levels = ['level1', 'level2', 'level3', 'level4'];
+    for (var l_i in levels) {
+        let lev = levels[l_i];
+        let medal;
+        if (localStorage.getItem(lev + '-gold'))
+            medal = 'gold';
+        else if (localStorage.getItem(lev + '-silver'))
+            medal = 'silver';
+        else if (localStorage.getItem(lev + '-bronze'))
+            medal = 'bronze';
+        
+        if (medal) {
+            $('.' + lev + '-btn').find('.medal').html('<img src="/img/' + medal + '.png">');
+            $('.' + lev + '-btn').attr('title', 'You have earned a ' + medal + ' medal for this level!');
+        }
+    }
+}
+
 
 $(function() {
     $('#lvl1-btn a').click(function() {
         if (confirm('Are you sure you wish to start level 1? You will lose all your current progress.')) {
+            $('.lvl-btn').removeClass('active');
+            $('#lvl1-btn').addClass('active');
             game(level_1);
         }
         return false;
@@ -432,7 +457,10 @@ $(function() {
             return false;
             
         if (confirm('Are you sure you wish to start level 2? You will lose all your current progress.')) {
+            $('.lvl-btn').removeClass('active');
+            $('#lvl2-btn').addClass('active');
             game(level_2);
+            alert('Due to time constraints, this level has not been completely finished. Bugs may occur.')
         }
         return false;
     });
@@ -462,5 +490,5 @@ $(function() {
     if (localStorage.getItem('level3-bronze'))
         $('#lvl4-btn').removeClass('disabled');
         
-    game(level_2);
+    game(level_1);
 });

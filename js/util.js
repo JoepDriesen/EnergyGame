@@ -81,7 +81,7 @@ let UNITS = {
     s: {
         display: 'sat',
         unit: '',
-        description: 'Steam saturation (1 = water, 0 = vapour, in between = steam)',
+        description: 'Steam saturation (0 = water, 1 = vapour, in between = steam)',
     },
     p: {
         display: 'p',

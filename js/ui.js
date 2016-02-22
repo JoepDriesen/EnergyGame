@@ -258,8 +258,11 @@ let UI = {
             $("#error-box").hide();
         });
         $('#goals-panel').find('td.bronze').text(g_CurrentLevel.goals.bronze);
+        $('#goals-panel').find('th.bronze .glyphicon').attr('title', g_CurrentLevel.goalHints.bronze);
         $('#goals-panel').find('td.silver').text(g_CurrentLevel.goals.silver);
+        $('#goals-panel').find('th.silver .glyphicon').attr('title', g_CurrentLevel.goalHints.silver);
         $('#goals-panel').find('td.gold').text(g_CurrentLevel.goals.gold);
+        $('#goals-panel').find('th.gold .glyphicon').attr('title', g_CurrentLevel.goalHints.gold);
         
         for (var hint_i in g_CurrentLevel.hints) {
             var hint = g_CurrentLevel.hints[hint_i];
@@ -282,7 +285,7 @@ let UI = {
             if (hint.arrow) {
                 var arEl = $('<img class="hint-arrow" src="/img/arrow.png">');
                 arEl.height(hint.arrow.height);
-                arEl.css({top: hint.arrow.top, bottom: hint.arrow.bottom, left: hint.arrow.left})
+                arEl.css({top: hint.arrow.top, bottom: hint.arrow.bottom, left: hint.arrow.left, right: hint.arrow.right})
                 if (hint.arrow.rotate)
                     arEl.css('transform', 'rotate(' + hint.arrow.rotate + 'deg)');
                     
@@ -365,6 +368,7 @@ let UI = {
         let parsEl = info.find('.params');
         parsEl.empty();
         for (var param_i in instance.component.params) {
+            let closure_param_i = param_i.slice();
             let param = instance.component.params[param_i];
             let parEl = $('<div class="param clearfix"><b class="pull-left">' + param.name + '</b></div>');
             parsEl.append(parEl);
@@ -379,8 +383,8 @@ let UI = {
                         max: param.max * 100,
                         value: Math.round(instance.params[param_i] * 100),
                         slide: function(e, ui) {
-                            instance.params[param_i] = ui.value / 100.0;
-                            parEl.find('.val').text(param.displayValue(instance.params[param_i]) + param.unit)
+                            instance.params[closure_param_i] = ui.value / 100.0;
+                            parEl.find('.val').text(param.displayValue(instance.params[closure_param_i]) + param.unit)
                         }
                     });
                 }
@@ -395,8 +399,8 @@ let UI = {
                         max: param.max,
                         value: instance.params[param_i],
                         slide: function(e, ui) {
-                            instance.params[param_i] = ui.value;
-                            parEl.find('.val').text(param.displayValue(instance.params[param_i]) + param.unit)
+                            instance.params[closure_param_i] = ui.value;
+                            parEl.find('.val').text(param.displayValue(instance.params[closure_param_i]) + param.unit)
                         }
                     });
                 }

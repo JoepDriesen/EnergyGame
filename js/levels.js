@@ -74,6 +74,11 @@ let level_1 = {
         silver: 'Generate more than 10 MW.',
         gold: 'Generate more than 10 MW with 5 components or less.',
     },
+    goalHints: {
+        bronze: 'You only need the first 3 components to achieve this goal.',
+        silver: 'Try using more than one turbine.',
+        gold: 'Checkout your water turbine by clicking on it in the workspace. Notice the efficiency graph.',  
+    },
     winCondition: function() {
         var gridInputState = level_1.inputs[1].state;
         
@@ -137,7 +142,7 @@ let level_1 = {
             'margin-top': '-65px',
             arrow: {
                 bottom: '-25px',
-                right: '20px',
+                right: '0',
                 height: '20px',
                 rotate: 90
             }
@@ -147,7 +152,7 @@ let level_1 = {
             width: 300,
             top: '50%',
             left: '50%',
-            'margin-top': '-200px',
+            'margin-top': '-100px',
             'margin-left': '-100px',
        },
        {
@@ -157,6 +162,18 @@ let level_1 = {
             left: '20px',
             'margin-top': '-100px',
             'margin-left': '-00px',
+       },
+       {
+            text: 'These are the goals for this level. Hover over the questions marks for extra tips to accomplish the corresponding goal.',
+            width: 200,
+            top: '10px',
+            right: '350px',
+            arrow: {
+                top: '50%',
+                right: '-20px',
+                height: '20px',
+                rotate: 90
+            }
        },
     ]
 };
@@ -254,6 +271,11 @@ let level_2 = {
         silver: 'Unavailable',
         gold: 'Unavailable',
     },
+    goalHints: {
+        bronze: 'You only need the first 3 components to achieve this goal.',
+        silver: '?',
+        gold: '?',  
+    },
     winCondition: function() {
         var gridInputState = level_2.inputs[1].state;
         
@@ -272,9 +294,22 @@ let level_2 = {
             'margin-top': '-65px',
             arrow: {
                 bottom: '-25px',
-                right: '20px',
+                right: '0',
                 height: '20px',
                 rotate: 90
+            }
+       },
+       {
+            text: 'A supply of coal can be burned in a boiler to heat up liquids',
+            width: 200,
+            top: '50%',
+            left: '20px',
+            'margin-top': '-100px',
+            arrow: {
+                bottom: '-25px',
+                left: '0',
+                height: '20px',
+                rotate: 160
             }
        },
     ]
